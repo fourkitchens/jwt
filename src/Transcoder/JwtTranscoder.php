@@ -1,11 +1,5 @@
 <?php
 
-namespace Drupal\jwt\Transcoder;
-
-use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\jwt\JsonWebToken\JsonWebToken;
-use Drupal\jwt\JsonWebToken\JsonWebTokenInterface;
-use Drupal\key\KeyRepositoryInterface;
 use Firebase\JWT\JWT;
 
 /**
@@ -41,21 +35,21 @@ class JwtTranscoder implements JwtTranscoderInterface {
    *
    * @var string
    */
-  protected $secret = NULL;
+  protected $secret;
 
   /**
    * The PEM encoded private key used for signing RSA JWTs.
    *
    * @var string
    */
-  protected $privateKey = NULL;
+  protected $privateKey;
 
   /**
    * The PEM encoded public key used to verify signatures on RSA JWTs.
    *
    * @var string
    */
-  protected $publicKey = NULL;
+  protected $publicKey;
 
   /**
    * {@inheritdoc}
@@ -92,25 +86,21 @@ class JwtTranscoder implements JwtTranscoderInterface {
    *
    * @param \Firebase\JWT\JWT $php_jwt
    *   The JWT library object.
-   * @param ConfigFactoryInterface $configFactory
-   *   Drupal config factory to retrieve the configuration information.
-   * @param KeyRepositoryInterface $key_repo
-   *   The Key repository to retrieve the key.
    */
-  public function __construct(JWT $php_jwt, ConfigFactoryInterface $configFactory, KeyRepositoryInterface $key_repo) {
+  public function __construct(JWT $php_jwt) {
     $this->transcoder = $php_jwt;
-    $key_id = $configFactory->get('jwt.config')->get('key_id');
-    $this->setAlgorithm($configFactory->get('jwt.config')->get('algorithm'));
+    $key_id = variable_get('jwt_key_id');
+    $this->setAlgorithm(variable_get('jwt_algorithm'));
 
-    if (isset($key_id)) {
-      $key = $key_repo->getKey($key_id);
-      if (!is_null($key)) {
-        $key_value = $key->getKeyValue();
-        if ($this->algorithmType == 'jwt_hs') {
+    if ($key_id !== NULL) {
+      $key = key_get_key($key_id);
+      if ($key !== NULL) {
+        $key_value = key_get_key_value($key);
+        if ($this->algorithmType === 'jwt_hs') {
           // Symmetric algorithm so we set the secret.
           $this->setSecret($key_value);
         }
-        elseif ($this->algorithmType == 'jwt_rs') {
+        elseif ($this->algorithmType === 'jwt_rs') {
           // Asymmetric algorithm so we set the private key.
           $this->setPrivateKey($key_value);
         }
@@ -130,7 +120,7 @@ class JwtTranscoder implements JwtTranscoderInterface {
    */
   public function setAlgorithm($algorithm) {
     $this->algorithm = $algorithm;
-    $this->algorithmType = $this->getAlgorithmType($algorithm);
+    $this->algorithmType = self::getAlgorithmType($algorithm);
   }
 
   /**
@@ -139,7 +129,7 @@ class JwtTranscoder implements JwtTranscoderInterface {
   public function setPrivateKey($private_key, $derive_public_key = TRUE) {
     $key_context = openssl_pkey_get_private($private_key);
     $key_details = openssl_pkey_get_details($key_context);
-    if ($key_details === FALSE || $key_details['type'] != OPENSSL_KEYTYPE_RSA) {
+    if ($key_details === FALSE || $key_details['type'] !== OPENSSL_KEYTYPE_RSA) {
       return FALSE;
     }
 
@@ -157,7 +147,7 @@ class JwtTranscoder implements JwtTranscoderInterface {
   public function setPublicKey($public_key) {
     $key_context = openssl_pkey_get_public($public_key);
     $key_details = openssl_pkey_get_details($key_context);
-    if ($key_details === FALSE || $key_details['type'] != OPENSSL_KEYTYPE_RSA) {
+    if ($key_details === FALSE || $key_details['type'] !== OPENSSL_KEYTYPE_RSA) {
       return FALSE;
     }
 
@@ -170,27 +160,26 @@ class JwtTranscoder implements JwtTranscoderInterface {
    */
   public function decode($jwt) {
     $key = $this->getKey('decode');
-    $algorithms = [$this->algorithm];
+    $algorithms = array($this->algorithm);
     try {
-      $token = $this->transcoder->decode($jwt, $key, $algorithms);
+      $token = JWT::decode($jwt, $key, $algorithms);
     }
     catch (\Exception $e) {
       throw JwtDecodeException::newFromException($e);
     }
-    return new JsonWebToken($token);
+    return new JwtJsonWebToken($token);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function encode(JsonWebTokenInterface $jwt) {
+  public function encode(JwtJsonWebTokenInterface $jwt) {
     $key = $this->getKey('encode');
     // Refuse to encode if we don't have a key yet.
     if ($key === NULL) {
       return FALSE;
     }
-    $encoded = $this->transcoder->encode($jwt->getPayload(), $key, $this->algorithm);
-    return $encoded;
+    return JWT::encode($jwt->getPayload(), $key, $this->algorithm);
   }
 
   /**
@@ -203,14 +192,14 @@ class JwtTranscoder implements JwtTranscoderInterface {
    *   Returns NULL if opteration is not found. Otherwise returns key.
    */
   protected function getKey($operation) {
-    if ($this->algorithmType == 'jwt_hs') {
+    if ($this->algorithmType === 'jwt_hs') {
       return $this->secret;
     }
-    elseif ($this->algorithmType == 'jwt_rs') {
-      if ($operation == 'encode') {
+    if ($this->algorithmType === 'jwt_rs') {
+      if ($operation === 'encode') {
         return $this->privateKey;
       }
-      elseif ($operation == 'decode') {
+      if ($operation === 'decode') {
         return $this->publicKey;
       }
     }

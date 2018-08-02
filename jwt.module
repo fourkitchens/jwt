@@ -1,0 +1,84 @@
+<?php
+
+/**
+ * @file
+ * The Drupal module file for JWT.
+ */
+
+use Firebase\JWT\JWT;
+
+/**
+ * Implements hook_ctools_plugin_directory().
+ */
+function jwt_ctools_plugin_directory($owner, $plugin_type) {
+  if ($owner === 'key' && $plugin_type === 'key_type') {
+    return "plugins/$plugin_type";
+  }
+  return NULL;
+}
+
+/**
+ * @param $payload
+ *
+ * @return bool|string
+ */
+function jwt_get_jwt($payload) {
+  libraries_load('php-jwt');
+  $jwt = new JwtJsonWebToken($payload);
+  $transcoder = new JwtTranscoder(new JWT());
+  return $transcoder->encode($jwt);
+}
+
+/**
+ * Implements hook_libraries_info().
+ */
+function jwt_libraries_info() {
+  $libraries['php-jwt'] = array(
+    'name' => 'PHP JWT',
+    'vendor url' => 'https://github.com/firebase/php-jwt',
+    'download url' => 'https://github.com/firebase/php-jwt/releases/latest',
+    'version arguments' => array(
+      'file' => 'README.md',
+      'pattern' => "/^#### (.*) \//",
+      'lines' => 121,
+    ),
+    'files' => array(
+      'php' => array(
+        'src/BeforeValidException.php',
+        'src/ExpiredException.php',
+        'src/JWT.php',
+        'src/SignatureInvalidException.php',
+      ),
+    ),
+    'xautoload' => 'jwt_libraries_info_xautoload',
+  );
+
+  return $libraries;
+}
+
+/**
+ * XAutoload callback for PHP-JWT.
+ *
+ * @param object $adapter
+ *   The XAutoload adapter to use.
+ */
+function jwt_libraries_info_xautoload($adapter) {
+  /** @var \Drupal\xautoload\Adapter\LocalDirectoryAdapter $adapter */
+  $adapter->composerJson('composer.json');
+}
+
+/**
+ * Implements hook_menu().
+ */
+function jwt_menu() {
+  $items['admin/config/system/jwt'] = array(
+    'title' => 'JWT Configuration',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('jwt_config_form'),
+    'access arguments' => array('access administration pages'),
+    'file' => 'includes/jwt.admin.form.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  return $items;
+}

@@ -2,21 +2,58 @@
 
 /**
  * @file
- * Contains jwt_auth_issuer.module..
+ * Contains jwt_auth_issuer.module.
  */
-
-use Drupal\Core\Routing\RouteMatchInterface;
 
 /**
  * Implements hook_help().
  */
-function jwt_auth_issuer_help($route_name, RouteMatchInterface $route_match) {
-  switch ($route_name) {
+function jwt_auth_issuer_help($path, $arg) {
+  switch ($path) {
     // Main module help for the jwt_auth_issuer module.
-    case 'help.page.jwt_auth_issuer':
+    case 'admin/help#jwt_auth_issuer':
       $output = '';
       $output .= '<h3>' . t('About') . '</h3>';
       $output .= '<p>' . t('Provides an endpoint which will issue JWTs.') . '</p>';
       return $output;
   }
+  return NULL;
+}
+
+/**
+ * AJAX JSON callback for a new JWT Token.
+ *
+ * @return object
+ *   The AJAX JSON response.
+ */
+function jwt_auth_issuer_generate_token($auth, $refreshTokens) {
+  $controller = new JwtAuthIssuerController($auth,
+    $refreshTokens);
+  return $controller->tokenResponse();
+}
+
+
+/**
+ * Implements hook_services_resources().
+ */
+function jwt_auth_issuer_services_resources() {
+  // JWT options:
+  // - auth: [ 'jwt_auth', 'basic_auth', 'cookie' ].
+  // JWT requirements:
+  // -_user_is_logged_in: 'TRUE'.
+  $resources = array(
+    'jwt' => array(
+      // Note that using actions will require a POST to get a valid response.
+      'actions' => array(
+        'token' => array(
+          'help' => 'JWT Auth Issuer',
+          'callback' => 'jwt_auth_issuer_generate_token',
+          'access callback' => 'user_access',
+          'access arguments' => array('access content'),
+          'access arguments append' => FALSE,
+        ),
+      ),
+    ),
+  );
+  return $resources;
 }

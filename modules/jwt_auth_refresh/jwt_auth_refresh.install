@@ -1,0 +1,45 @@
+<?php
+
+/**
+ * @file
+ * The install file for jwt_auth_refresh.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function jwt_auth_refresh_schema() {
+  $schema['jwt_refresh_token'] = array(
+    'description' => 'JWT Refresh Token.',
+    'fields' => array(
+      'id' => array(
+        'description' => 'The primary identifier for a token.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'uid' => array(
+        'description' => 'The associated user.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'uuid' => array(
+        'description' => 'The universally unique identifier for this token.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'expires' => array(
+        'description' => 'The time the token expires.',
+      ),
+    ),
+    'unique keys' => array(
+      'uuid' => array('uuid'),
+    ),
+    'primary key' => array('id'),
+  );
+  return $schema;
+}

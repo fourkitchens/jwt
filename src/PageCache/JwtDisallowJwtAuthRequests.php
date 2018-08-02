@@ -2,9 +2,6 @@
 
 namespace Drupal\jwt\PageCache;
 
-use Drupal\Core\PageCache\RequestPolicyInterface;
-use Symfony\Component\HttpFoundation\Request;
-
 /**
  * Cache policy for pages served from JWT auth.
  *
@@ -12,7 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
  * reasons. Otherwise responses for authenticated requests can get into the
  * page cache and could be delivered to unprivileged users.
  */
-class DisallowJwtAuthRequests implements RequestPolicyInterface {
+class JwtDisallowJwtAuthRequests implements RequestPolicyInterface {
 
   /**
    * {@inheritdoc}

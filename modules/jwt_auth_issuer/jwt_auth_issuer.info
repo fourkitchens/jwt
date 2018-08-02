@@ -1,0 +1,7 @@
+name = JWT Authentication Issuer
+type = module
+description = Provides an endpoint which will issue JWTs.
+core = 7.x
+package = Services
+dependencies[] = jwt
+dependencies[] = services

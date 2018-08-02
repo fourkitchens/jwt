@@ -5,10 +5,30 @@
  */
 function jwt_auth_refresh_cron() {
   // Delete expired tokens.
-  $storage = \Drupal::entityTypeManager()->getStorage('jwt_refresh_token');
-  $expired = $storage
-    ->getQuery()
-    ->condition('expires', REQUEST_TIME, '<')
+  $query = new EntityFieldQuery();
+  $expired = $query->entityCondition('entity_type', 'jwt_refresh_token')
+    ->propertyCondition('expires', REQUEST_TIME, '<')
     ->execute();
-  $storage->delete($storage->loadMultiple($expired));
+  entity_delete_multiple('jwt_refresh_token', $expired);
+}
+
+/**
+ * Implements hook_menu().
+ */
+function jwt_auth_refresh_menu() {
+  $items['jwt/refresh'] = array(
+    'title' => 'Example RSS feed',
+    'page callback' => 'jwt_auth_refresh_refresh_page',
+    'access callback' => array('jwt_auth_refresh_refresh_access'),
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+function jwt_auth_refresh_refresh_page($auth, $refreshTokens) {
+  $jwtTranscoder = new \Drupal\jwt\Transcoder\JwtTranscoder(new \Firebase\JWT\JWT());
+  $controller = RefreshController::create();
+  $request = array();
+  return $controller->refresh($request);
 }

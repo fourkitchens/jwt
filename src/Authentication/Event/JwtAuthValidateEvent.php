@@ -1,7 +1,5 @@
 <?php
 
-namespace Drupal\jwt\Authentication\Event;
-
 /**
  * Class JwtAuthValidateEvent.
  *

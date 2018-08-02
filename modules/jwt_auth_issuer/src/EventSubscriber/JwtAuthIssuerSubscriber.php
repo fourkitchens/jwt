@@ -1,33 +1,29 @@
 <?php
 
-namespace Drupal\jwt_auth_issuer\EventSubscriber;
-
-use Drupal\Core\Session\AccountInterface;
-use Drupal\jwt\Authentication\Event\JwtAuthEvents;
-use Drupal\jwt\Authentication\Event\JwtAuthGenerateEvent;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use JwtAuthEvents;
+use JwtAuthGenerateEvent;
 
 /**
  * Class JwtAuthIssuerSubscriber.
  *
  * @package Drupal\jwt_auth_issuer
  */
-class JwtAuthIssuerSubscriber implements EventSubscriberInterface {
+class JwtAuthIssuerSubscriber {
 
   /**
    * The current user.
    *
-   * @var \Drupal\Core\Session\AccountInterface
+   * @var object
    */
   protected $currentUser;
 
   /**
    * Constructor.
    *
-   * @param \Drupal\Core\Session\AccountInterface $user
+   * @param object $user
    *   The current user.
    */
-  public function __construct(AccountInterface $user) {
+  public function __construct($user) {
     $this->currentUser = $user;
   }
 
@@ -43,7 +39,7 @@ class JwtAuthIssuerSubscriber implements EventSubscriberInterface {
   /**
    * Sets the standard claims set for a JWT.
    *
-   * @param \Drupal\jwt\Authentication\Event\JwtAuthGenerateEvent $event
+   * @param \JwtAuthGenerateEvent $event
    *   The event.
    */
   public function setStandardClaims(JwtAuthGenerateEvent $event) {
@@ -55,7 +51,7 @@ class JwtAuthIssuerSubscriber implements EventSubscriberInterface {
   /**
    * Sets claims for a Drupal consumer on the JWT.
    *
-   * @param \Drupal\jwt\Authentication\Event\JwtAuthGenerateEvent $event
+   * @param \JwtAuthGenerateEvent $event
    *   The event.
    */
   public function setDrupalClaims(JwtAuthGenerateEvent $event) {

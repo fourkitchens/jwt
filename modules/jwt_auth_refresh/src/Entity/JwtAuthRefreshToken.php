@@ -1,15 +1,5 @@
 <?php
 
-namespace Drupal\jwt_auth_refresh\Entity;
-
-use Drupal\Core\Annotation\Translation;
-use Drupal\Core\Entity\Annotation\ContentEntityType;
-use Drupal\Core\Entity\ContentEntityBase;
-use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\Core\Field\BaseFieldDefinition;
-use Drupal\jwt_auth_refresh\JwtRefreshTokenInterface;
-use Drupal\user\UserInterface;
-
 /**
  * @ContentEntityType(
  *   id = "jwt_refresh_token",
@@ -22,21 +12,31 @@ use Drupal\user\UserInterface;
  *   }
  * )
  */
-class JwtRefreshToken extends ContentEntityBase implements JwtRefreshTokenInterface {
+class JwtAuthRefreshToken extends EntityDrupalWrapper implements JwtAuthRefreshTokenInterface {
+
+  /**
+   * Creates a new Jwt Refresh Token.
+   *
+   * @return JwtAuthRefreshToken
+   *   The new token.
+   */
+  public function create() {
+    return new self('jwt_refresh_token');
+  }
 
   /**
    * @inheritDoc
    */
   public function isExpired() {
-    return $this->get('expires')->getString() < REQUEST_TIME;
+    return $this->get('expires')->value() < REQUEST_TIME;
   }
 
   /**
    * Default TTL.
    *
-   * One week.
+   * One week. 60 * 60 * 24 * 7
    */
-  const TTL = 60 * 60 * 24 * 7;
+  const TTL = 604800;
 
   /**
    * @inheritDoc
@@ -61,9 +61,10 @@ class JwtRefreshToken extends ContentEntityBase implements JwtRefreshTokenInterf
    * Generate default value for the expires time.
    *
    * @return string[]
+   *   The expiration time.
    */
   public static function expires() {
-    return [REQUEST_TIME + self::TTL];
+    return array(REQUEST_TIME + self::TTL);
   }
 
   /**
@@ -77,7 +78,7 @@ class JwtRefreshToken extends ContentEntityBase implements JwtRefreshTokenInterf
    * {@inheritdoc}
    */
   public function getOwnerId() {
-    return $this->getEntityKey('uid');
+    return $this->get('uid');
   }
 
   /**
@@ -91,8 +92,8 @@ class JwtRefreshToken extends ContentEntityBase implements JwtRefreshTokenInterf
   /**
    * {@inheritdoc}
    */
-  public function setOwner(UserInterface $account) {
-    $this->set('uid', $account->id());
+  public function setOwner(\stdClass $account) {
+    $this->set('uid', $account->id);
     return $this;
   }
 

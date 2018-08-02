@@ -1,55 +1,24 @@
 <?php
 
-namespace Drupal\jwt_auth_refresh\Controller;
-
-use Drupal\Core\Access\AccessResult;
-use Drupal\Core\Flood\FloodInterface;
-use Drupal\Core\Session\AccountSwitcherInterface;
-use Drupal\jwt\Authentication\Provider\JwtAuth;
-use Drupal\jwt\Transcoder\JwtDecodeException;
-use Drupal\jwt\Transcoder\JwtTranscoderInterface;
-use Drupal\jwt_auth_issuer\Controller\JwtAuthIssuerController;
-use Drupal\jwt_auth_refresh\JwtRefreshTokensInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-
-class RefreshController extends JwtAuthIssuerController {
-
-  /**
-   * Account switcher service.
-   *
-   * @var \Drupal\Core\Session\AccountSwitcherInterface
-   */
-  protected $accountSwitcher;
-
-  /**
-   * Flood service.
-   *
-   * @var \Drupal\Core\Flood\FloodInterface
-   */
-  protected $flood;
-
+class JwtAuthRefreshController extends JwtAuthIssuerController {
   /**
    * JWT Transcoder.
    *
-   * @var \Drupal\jwt\Transcoder\JwtTranscoderInterface
+   * @var JwtTranscoderInterface
    */
   protected $jwtTranscoder;
 
   /**
    * Current request.
    *
-   * @var null|\Symfony\Component\HttpFoundation\Request
+   * @var array|null
    */
   protected $currentRequest;
 
   /**
    * @inheritDoc
    */
-  public function __construct(JwtAuth $auth, JwtRefreshTokensInterface $refreshTokens, AccountSwitcherInterface $accountSwitcher, FloodInterface $flood, JwtTranscoderInterface $jwtTranscoder, RequestStack $requestStack) {
+  public function __construct(JwtAuth $auth, JwtAuthRefreshTokensInterface $refreshTokens, JwtTranscoderInterface $jwtTranscoder) {
     parent::__construct($auth, $refreshTokens);
     $this->accountSwitcher = $accountSwitcher;
     $this->flood = $flood;
@@ -72,22 +41,10 @@ class RefreshController extends JwtAuthIssuerController {
   }
 
   /**
-   * Enforces flood control for the current login request, by IP.
-   *
-   * @throws \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException
-   */
-  protected function floodControl() {
-    $flood_config = $this->config('user.flood');
-    if (!$this->flood->isAllowed('jwt_auth_refresh.failed_refresh_ip', $flood_config->get('ip_limit'), $flood_config->get('ip_window'))) {
-      throw new AccessDeniedHttpException('Access is blocked because of IP based flood prevention.', NULL, Response::HTTP_TOO_MANY_REQUESTS);
-    }
-  }
-
-  /**
    * Refresh controller.
    *
-   * @param \Symfony\Component\HttpFoundation\Request $request
-   * @return \Symfony\Component\HttpFoundation\JsonResponse
+   * @param array $request
+   * @return array JsonResponse
    */
   public function refresh(Request $request) {
     $owner = $this->getToken($request)->getOwner();
@@ -101,8 +58,8 @@ class RefreshController extends JwtAuthIssuerController {
   /**
    * Retrieve the refresh token from the request.
    *
-   * @param \Symfony\Component\HttpFoundation\Request $request
-   * @return \Drupal\jwt_auth_refresh\JwtRefreshTokenInterface|null
+   * @param array $request
+   * @return JwtRefreshTokenInterface|null
    */
   protected function getToken(Request $request) {
     $json = json_decode($request->getContent());
@@ -124,8 +81,8 @@ class RefreshController extends JwtAuthIssuerController {
   /**
    * Access checker.
    *
-   * @param \Symfony\Component\HttpFoundation\Request $request
-   * @return \Drupal\Core\Access\AccessResultInterface
+   * @param array $request
+   * @return array
    */
   public function access() {
     // We can't type-hint $request

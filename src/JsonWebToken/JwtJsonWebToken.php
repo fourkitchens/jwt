@@ -1,13 +1,11 @@
 <?php
 
-namespace Drupal\jwt\JsonWebToken;
-
 /**
- * Class JsonWebToken.
+ * Class JwtJsonWebToken.
  *
  * @package Drupal\jwt\JsonWebToken
  */
-class JsonWebToken implements JsonWebTokenInterface {
+class JwtJsonWebToken implements JwtJsonWebTokenInterface {
 
   /**
    * Internal representation of the token.
@@ -23,7 +21,7 @@ class JsonWebToken implements JsonWebTokenInterface {
    *   The Object to turn into a JWT.
    */
   public function __construct($jwt = NULL) {
-    $jwt = (is_null($jwt)) ? new \stdClass() : $jwt;
+    $jwt = ($jwt === NULL) ? new \stdClass() : $jwt;
     $this->payload = $jwt;
   }
 
@@ -73,7 +71,7 @@ class JsonWebToken implements JsonWebTokenInterface {
    *   The claims value.
    */
   protected function internalGetClaim(&$payload, $claim) {
-    $current_claim = (is_array($claim)) ? array_shift($claim) : $claim;
+    $current_claim = is_array($claim) ? array_shift($claim) : $claim;
 
     if (!isset($payload->$current_claim)) {
       return NULL;
@@ -82,9 +80,7 @@ class JsonWebToken implements JsonWebTokenInterface {
     if (is_array($claim) && count($claim) > 0) {
       return $this->internalGetClaim($payload->$current_claim, $claim);
     }
-    else {
-      return $payload->$current_claim;
-    }
+    return $payload->$current_claim;
   }
 
   /**
@@ -99,7 +95,7 @@ class JsonWebToken implements JsonWebTokenInterface {
    *   The value to set for the given claim.
    */
   protected function internalSetClaim(&$payload, $claim, $value) {
-    $current_claim = (is_array($claim)) ? array_shift($claim) : $claim;
+    $current_claim = is_array($claim) ? array_shift($claim) : $claim;
 
     if (is_array($claim) && count($claim) > 0) {
       if (!isset($payload->$current_claim)) {
@@ -123,7 +119,7 @@ class JsonWebToken implements JsonWebTokenInterface {
    *   nested claim to be set.
    */
   protected function internalUnsetClaim(&$payload, $claim) {
-    $current_claim = (is_array($claim)) ? array_shift($claim) : $claim;
+    $current_claim = is_array($claim) ? array_shift($claim) : $claim;
 
     if (!isset($payload->$current_claim)) {
       return;

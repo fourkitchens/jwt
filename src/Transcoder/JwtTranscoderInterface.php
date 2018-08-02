@@ -1,9 +1,5 @@
 <?php
 
-namespace Drupal\jwt\Transcoder;
-
-use Drupal\jwt\JsonWebToken\JsonWebTokenInterface;
-
 /**
  * Interface JwtTranscoderInterface.
  *
@@ -17,23 +13,23 @@ interface JwtTranscoderInterface {
    * @param string $jwt
    *   The encoded JWT.
    *
-   * @return \Drupal\jwt\JsonWebToken\JsonWebTokenInterface
+   * @return \JwtJsonWebTokenInterface
    *   Validated JWT.
    *
-   * @throws \Drupal\jwt\Transcoder\JwtDecodeException
+   * @throws \JwtDecodeException
    */
   public function decode($jwt);
 
   /**
    * Encodes a JsonWebToken.
    *
-   * @param \Drupal\jwt\JsonWebToken\JsonWebTokenInterface $jwt
+   * @param \JwtJsonWebTokenInterface $jwt
    *   A JWT.
    *
    * @return string
    *   The encoded JWT.
    */
-  public function encode(JsonWebTokenInterface $jwt);
+  public function encode(JwtJsonWebTokenInterface $jwt);
 
   /**
    * Sets the secret that is used for a symmetric algorithm signature.
