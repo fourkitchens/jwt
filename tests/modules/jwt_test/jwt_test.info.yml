@@ -1,0 +1,7 @@
+name: 'JWT test'
+type: module
+description: 'Support module for jwt testing.'
+package: Testing
+core: 8.x
+dependencies:
+  - jwt:jwt
