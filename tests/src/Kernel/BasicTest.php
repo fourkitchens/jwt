@@ -4,7 +4,6 @@ namespace Drupal\Tests\jwt\Kernel;
 
 use Drupal\KernelTests\KernelTestBase;
 
-
 /**
  * Tests JWT config schema.
  *
