@@ -1,11 +1,8 @@
 name: JSON Web Token
 description: Provides a basic JWT implentation for Drupal
 package: Web services
-
 type: module
 core: 8.x
-
+configure: jwt.jwt_config_form
 dependencies:
   - key:key
-
-configure: jwt.settings

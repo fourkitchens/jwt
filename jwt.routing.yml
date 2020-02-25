@@ -3,4 +3,6 @@ jwt.settings:
   defaults:
     _form: '\Drupal\jwt\Config\SettingsForm'
   requirements:
-    _permission: 'administer jwt settings'
+    _permission: 'administer jwt'
+  options:
+    _admin_route: TRUE
