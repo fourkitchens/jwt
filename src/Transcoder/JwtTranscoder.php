@@ -138,6 +138,9 @@ class JwtTranscoder implements JwtTranscoderInterface {
    */
   public function setPrivateKey($private_key, $derive_public_key = TRUE) {
     $key_context = openssl_pkey_get_private($private_key);
+    if ($key_context === FALSE) {
+      return FALSE;
+    }
     $key_details = openssl_pkey_get_details($key_context);
     if ($key_details === FALSE || $key_details['type'] != OPENSSL_KEYTYPE_RSA) {
       return FALSE;
@@ -156,6 +159,9 @@ class JwtTranscoder implements JwtTranscoderInterface {
    */
   public function setPublicKey($public_key) {
     $key_context = openssl_pkey_get_public($public_key);
+    if ($key_context === FALSE){
+      return FALSE;
+    }
     $key_details = openssl_pkey_get_details($key_context);
     if ($key_details === FALSE || $key_details['type'] != OPENSSL_KEYTYPE_RSA) {
       return FALSE;
