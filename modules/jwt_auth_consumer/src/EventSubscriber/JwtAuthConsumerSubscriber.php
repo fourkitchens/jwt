@@ -2,10 +2,10 @@
 
 namespace Drupal\jwt_auth_consumer\EventSubscriber;
 
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\jwt\Authentication\Event\JwtAuthValidateEvent;
 use Drupal\jwt\Authentication\Event\JwtAuthValidEvent;
 use Drupal\jwt\Authentication\Event\JwtAuthEvents;
-use Drupal\Core\Entity\EntityManagerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -18,18 +18,18 @@ class JwtAuthConsumerSubscriber implements EventSubscriberInterface {
   /**
    * A User Interface.
    *
-   * @var \Drupal\Core\Entity\EntityManagerInterface
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  protected $entityManager;
+  protected $entityTypeManager;
 
   /**
    * Constructor.
    *
-   * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity manager service.
    */
-  public function __construct(EntityManagerInterface $entity_manager) {
-    $this->entityManager = $entity_manager;
+  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
@@ -57,7 +57,7 @@ class JwtAuthConsumerSubscriber implements EventSubscriberInterface {
     if ($uid === NULL) {
       $event->invalidate("No Drupal uid was provided in the JWT payload.");
     }
-    $user = $this->entityManager->getStorage('user')->load($uid);
+    $user = $this->entityTypeManager->getStorage('user')->load($uid);
     if ($user === NULL) {
       $event->invalidate("No UID exists.");
     }
@@ -71,7 +71,7 @@ class JwtAuthConsumerSubscriber implements EventSubscriberInterface {
    */
   public function loadUser(JwtAuthValidEvent $event) {
     $token = $event->getToken();
-    $user_storage = $this->entityManager->getStorage('user');
+    $user_storage = $this->entityTypeManager->getStorage('user');
     $uid = $token->getClaim(['drupal', 'uid']);
     $user = $user_storage->load($uid);
     $event->setUser($user);
