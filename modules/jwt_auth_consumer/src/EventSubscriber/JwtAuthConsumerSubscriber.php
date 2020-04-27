@@ -55,11 +55,16 @@ class JwtAuthConsumerSubscriber implements EventSubscriberInterface {
     $token = $event->getToken();
     $uid = $token->getClaim(['drupal', 'uid']);
     if ($uid === NULL) {
-      $event->invalidate("No Drupal uid was provided in the JWT payload.");
+      $event->invalidate('No Drupal uid was provided in the JWT payload.');
+      return;
     }
     $user = $this->entityTypeManager->getStorage('user')->load($uid);
     if ($user === NULL) {
-      $event->invalidate("No UID exists.");
+      $event->invalidate('No UID exists.');
+      return;
+    }
+    if ($user->isBlocked()) {
+      $event->invalidate('User is blocked.');
     }
   }
 
