@@ -111,8 +111,13 @@ class JwtTranscoder implements JwtTranscoderInterface {
           $this->setSecret($key_value);
         }
         elseif ($this->algorithmType == 'jwt_rs') {
-          // Asymmetric algorithm so we set the private key.
-          $this->setPrivateKey($key_value);
+          // Asymmetric algorithm so we set the private key if possible.
+          if (strpos($key_value, '-----BEGIN PUBLIC KEY-----') !== FALSE) {
+            $this->setPublicKey($key_value);
+          }
+          else {
+            $this->setPrivateKey($key_value);
+          }
         }
       }
     }
