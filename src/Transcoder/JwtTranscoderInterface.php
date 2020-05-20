@@ -13,7 +13,7 @@ interface JwtTranscoderInterface {
    * @param string $jwt
    *   The encoded JWT.
    *
-   * @return \JwtJsonWebTokenInterface
+   * @return \JsonWebTokenInterface
    *   Validated JWT.
    *
    * @throws \JwtDecodeException
@@ -23,13 +23,13 @@ interface JwtTranscoderInterface {
   /**
    * Encodes a JsonWebToken.
    *
-   * @param \JwtJsonWebTokenInterface $jwt
+   * @param \JsonWebTokenInterface $jwt
    *   A JWT.
    *
    * @return string
    *   The encoded JWT.
    */
-  public function encode(JwtJsonWebTokenInterface $jwt);
+  public function encode(JsonWebTokenInterface $jwt);
 
   /**
    * Sets the secret that is used for a symmetric algorithm signature.

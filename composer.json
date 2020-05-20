@@ -9,5 +9,10 @@
   "support": {
     "issues": "http://drupal.org/project/issues/jwt",
     "source": "http://cgit.drupalcode.org/jwt"
+  },
+  "require": {
+    "php": ">=7.0.8",
+    "firebase/php-jwt": "^4.0 | ^5.0",
+    "drupal/key": "~1.3"
   }
 }

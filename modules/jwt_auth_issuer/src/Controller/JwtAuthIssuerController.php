@@ -15,28 +15,19 @@ class JwtAuthIssuerController {
   protected $auth;
 
   /**
-   * Refresh token.
-   *
-   * @var \JwtRefreshTokensInterface
+   * @param \JwtAuth $auth
+   *   The JWT auth service.
    */
-  protected $refreshTokens;
-
-  /**
-   * Constructor.
-   */
-  public function __construct(JwtAuth $auth, JwtRefreshTokensInterface $refreshTokens) {
+  public function __construct(JwtAuth $auth) {
     $this->auth = $auth;
-    $this->refreshTokens = $refreshTokens;
   }
 
   /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('jwt.authentication.jwt'),
-      $container->get('jwt_auth_refresh.tokens')
-    );
+    $auth = $container->get('jwt.authentication.jwt');
+    return new static($auth);
   }
 
   /**
@@ -48,14 +39,12 @@ class JwtAuthIssuerController {
     $response = new \stdClass();
     $token = $this->auth->generateToken();
     if ($token === FALSE) {
-      $response->error = 'Error. Please set a key in the JWT admin page.';
+      $response->error = "Error. Please set a key in the JWT admin page.";
       return new JsonResponse($response, 500);
     }
+
     $response->token = $token;
-    if ($this->moduleHandler()->moduleExists('jwt_auth_refresh')) {
-      $response->refresh_token = $this->refreshTokens->retrieveForUser($this->currentUser());
-    }
-    return new $response;
+    return new JsonResponse($response);
   }
 
 }

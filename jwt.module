@@ -24,7 +24,7 @@ function jwt_ctools_plugin_directory($owner, $plugin_type) {
  */
 function jwt_get_jwt($payload) {
   libraries_load('php-jwt');
-  $jwt = new JwtJsonWebToken($payload);
+  $jwt = new JsonWebToken($payload);
   $transcoder = new JwtTranscoder(new JWT());
   return $transcoder->encode($jwt);
 }

@@ -24,7 +24,7 @@ class JwtAuthRefreshTokens implements JwtRefreshTokensInterface {
       'uid' => $account->uid,
     ]);
     $token->save();
-    $jwt = new JwtJsonWebToken((object) [
+    $jwt = new JsonWebToken((object) [
       'jti' => $token->get('uuid')->getString(),
       'exp' => $token->get('expires')->getString(),
     ]);

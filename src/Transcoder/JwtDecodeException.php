@@ -11,12 +11,12 @@ use Firebase\JWT\ExpiredException;
  */
 class JwtDecodeException extends \Exception {
 
-  const DOMAIN            = 1;
-  const UNEXPECTED_VALUE  = 2;
+  const DOMAIN = 1;
+  const UNEXPECTED_VALUE = 2;
   const SIGNATURE_INVALID = 3;
-  const BEFORE_VALID      = 4;
-  const EXPIRED           = 5;
-  const UNKNOWN           = 6;
+  const BEFORE_VALID = 4;
+  const EXPIRED = 5;
+  const UNKNOWN = 6;
 
   /**
    * Construct a new decode exception from a php-jwt exception.
@@ -40,9 +40,6 @@ class JwtDecodeException extends \Exception {
 
       case ($e instanceof \DomainException):
         return new static($e->getMessage(), self::DOMAIN, $e);
-
-      case ($e instanceof \Exception):
-        return new static('Internal Server Error', self::UNKNOWN, $e);
 
       default:
         return new static('Internal Server Error', self::UNKNOWN, $e);

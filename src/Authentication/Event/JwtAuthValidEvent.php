@@ -16,7 +16,7 @@ class JwtAuthValidEvent extends JwtAuthBaseEvent {
   /**
    * {@inheritdoc}
    */
-  public function __construct(JwtJsonWebTokenInterface $token) {
+  public function __construct(JsonWebTokenInterface $token) {
     $this->user = drupal_anonymous_user();
     parent::__construct($token);
   }

@@ -2,19 +2,21 @@
 
 /**
  * @file
- * Install, update, and uninstall functions for the JWT module.
+ * Install, update, and uninstall functions for the jwt module.
  */
 
 /**
  * Implements hook_requirements().
  */
 function jwt_requirements($phase) {
-  $requirements = array();
-  if ($phase === 'install' && libraries_detect('php-jwt')) {
-    $requirements['jwt_library'] = array(
-      'description' => t('JWT Authentication requires the firebase/php-jwt library.'),
-      'severity' => REQUIREMENT_ERROR,
-    );
+  $requirements = [];
+  if ($phase == 'install') {
+    if (!class_exists('\Firebase\JWT\JWT')) {
+      $requirements['jwt_library'] = [
+        'description' => t('JWT Authentication requires the firebase/php-jwt library.'),
+        'severity' => REQUIREMENT_ERROR,
+      ];
+    }
   }
 
   return $requirements;

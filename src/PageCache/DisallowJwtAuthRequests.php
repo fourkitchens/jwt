@@ -1,7 +1,5 @@
 <?php
 
-namespace Drupal\jwt\PageCache;
-
 /**
  * Cache policy for pages served from JWT auth.
  *
@@ -9,7 +7,7 @@ namespace Drupal\jwt\PageCache;
  * reasons. Otherwise responses for authenticated requests can get into the
  * page cache and could be delivered to unprivileged users.
  */
-class JwtDisallowJwtAuthRequests implements RequestPolicyInterface {
+class DisallowJwtAuthRequests implements RequestPolicyInterface {
 
   /**
    * {@inheritdoc}

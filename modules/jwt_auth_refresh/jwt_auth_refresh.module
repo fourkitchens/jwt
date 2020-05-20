@@ -27,7 +27,7 @@ function jwt_auth_refresh_menu() {
 }
 
 function jwt_auth_refresh_refresh_page($auth, $refreshTokens) {
-  $jwtTranscoder = new \Drupal\jwt\Transcoder\JwtTranscoder(new \Firebase\JWT\JWT());
+  $jwtTranscoder = new JwtTranscoder(new \Firebase\JWT\JWT());
   $controller = RefreshController::create();
   $request = array();
   return $controller->refresh($request);

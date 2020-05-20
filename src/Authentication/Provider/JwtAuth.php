@@ -1,15 +1,5 @@
 <?php
 
-namespace Drupal\jwt\Authentication\Provider;
-
-use Drupal\jwt\Transcoder\JwtTranscoderInterface;
-use Drupal\jwt\Transcoder\JwtDecodeException;
-use Drupal\jwt\Authentication\Event\JwtAuthGenerateEvent;
-use Drupal\jwt\Authentication\Event\JwtAuthValidateEvent;
-use Drupal\jwt\Authentication\Event\JwtAuthValidEvent;
-use Drupal\jwt\Authentication\Event\JwtAuthEvents;
-use Drupal\jwt\JsonWebToken\JwtJsonWebToken;
-
 /**
  * JWT Authentication Provider.
  */
@@ -18,21 +8,14 @@ class JwtAuth {
   /**
    * The JWT Transcoder service.
    *
-   * @var \Drupal\jwt\Transcoder\JwtTranscoderInterface
+   * @var \JwtTranscoderInterface
    */
   protected $transcoder;
 
   /**
-   * The event dispatcher.
-   *
-   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
-   */
-  protected $eventDispatcher;
-
-  /**
    * Constructs a HTTP basic authentication provider object.
    *
-   * @param \Drupal\jwt\Transcoder\JwtTranscoderInterface $transcoder
+   * @param \JwtTranscoderInterface $transcoder
    *   The jwt transcoder service.
    */
   public function __construct(
@@ -88,7 +71,7 @@ class JwtAuth {
    *   The encoded JWT token. False if there is a problem encoding.
    */
   public function generateToken() {
-    $event = new JwtAuthGenerateEvent(new JwtJsonWebToken());
+    $event = new JwtAuthGenerateEvent(new JsonWebToken());
     $this->eventDispatcher->dispatch(JwtAuthEvents::GENERATE, $event);
     $jwt = $event->getToken();
     return $this->transcoder->encode($jwt);
@@ -105,7 +88,7 @@ class JwtAuth {
    */
   protected function getJwtFromRequest(Request $request) {
     $auth_header = $request->headers->get('Authorization');
-    $matches = array();
+    $matches = [];
     if (!$hasJWT = preg_match('/^Bearer (.*)/', $auth_header, $matches)) {
       return FALSE;
     }

@@ -1,11 +1,11 @@
 <?php
 
 /**
- * Interface JwtJsonWebTokenInterface.
+ * Interface JsonWebTokenInterface.
  *
  * @package Drupal\jwt\JsonWebToken
  */
-interface JwtJsonWebTokenInterface {
+interface JsonWebTokenInterface {
 
   /**
    * Gets the unencoded payload as an object.
