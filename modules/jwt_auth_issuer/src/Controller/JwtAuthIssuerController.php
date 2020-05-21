@@ -8,6 +8,20 @@
 class JwtAuthIssuerController {
 
   /**
+   * The static instance
+   *
+   * @var \JwtAuthIssuerController
+   */
+  private static $_instance = null;
+
+  public static function get() {
+    if(self::$_instance === null) {
+      self::$_instance = new static(JwtAuth::get());
+    }
+    return self::$_instance;
+  }
+
+  /**
    * The JWT Auth Service.
    *
    * @var \JwtAuth
@@ -23,28 +37,20 @@ class JwtAuthIssuerController {
   }
 
   /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    $auth = $container->get('jwt.authentication.jwt');
-    return new static($auth);
-  }
-
-  /**
    * Generate.
    *
    * @return stdClass JSON response with token.
+   * @throws ServicesException
    */
   public function tokenResponse() {
     $response = new \stdClass();
     $token = $this->auth->generateToken();
     if ($token === FALSE) {
-      $response->error = "Error. Please set a key in the JWT admin page.";
-      return new JsonResponse($response, 500);
+      services_error(t("Error. Please set a key in the JWT admin page."), 500);
     }
 
     $response->token = $token;
-    return new JsonResponse($response);
+    return $response;
   }
 
 }

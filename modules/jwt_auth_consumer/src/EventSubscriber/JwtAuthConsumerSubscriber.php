@@ -5,17 +5,7 @@
  *
  * @package Drupal\jwt_auth_consumer
  */
-class JwtAuthConsumerSubscriber implements EventSubscriberInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function getSubscribedEvents() {
-    $events[JwtAuthEvents::VALIDATE][] = ['validate'];
-    $events[JwtAuthEvents::VALID][] = ['loadUser'];
-
-    return $events;
-  }
+class JwtAuthConsumerSubscriber {
 
   /**
    * Validates that a uid is present in the JWT.
@@ -26,19 +16,19 @@ class JwtAuthConsumerSubscriber implements EventSubscriberInterface {
    * @param \JwtAuthValidateEvent $event
    *   A JwtAuth event.
    */
-  public function validate(JwtAuthValidateEvent $event) {
+  public static function validate(JwtAuthValidateEvent $event) {
     $token = $event->getToken();
     $uid = $token->getClaim(['drupal', 'uid']);
-    if ($uid === NULL) {
+    if (!$uid) {
       $event->invalidate('No Drupal uid was provided in the JWT payload.');
       return;
     }
     $user = user_load($uid);
-    if ($user === NULL) {
+    if ($user === NULL || !$user->uid) {
       $event->invalidate('No UID exists.');
       return;
     }
-    if ($user->isBlocked()) {
+    if (user_is_blocked($user->name)) {
       $event->invalidate('User is blocked.');
     }
   }
@@ -49,7 +39,7 @@ class JwtAuthConsumerSubscriber implements EventSubscriberInterface {
    * @param \JwtAuthValidEvent $event
    *   A JwtAuth event.
    */
-  public function loadUser(JwtAuthValidEvent $event) {
+  public static function loadUser(JwtAuthValidEvent $event) {
     $token = $event->getToken();
     $uid = $token->getClaim(['drupal', 'uid']);
     $user = user_load($uid);

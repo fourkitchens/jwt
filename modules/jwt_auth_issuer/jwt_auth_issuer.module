@@ -26,12 +26,9 @@ function jwt_auth_issuer_help($path, $arg) {
  * @return object
  *   The AJAX JSON response.
  */
-function jwt_auth_issuer_generate_token($auth, $refreshTokens) {
-  $controller = new JwtAuthIssuerController($auth,
-    $refreshTokens);
-  return $controller->tokenResponse();
+function jwt_auth_issuer_generate_token() {
+  return JwtAuthIssuerController::get()->tokenResponse();
 }
-
 
 /**
  * Implements hook_services_resources().
@@ -56,4 +53,9 @@ function jwt_auth_issuer_services_resources() {
     ),
   );
   return $resources;
+}
+
+function jwt_auth_issuer_jwt_auth_generate_alter(JwtAuthGenerateEvent &$event) {
+  JwtAuthIssuerSubscriber::setDrupalClaims($event);
+  JwtAuthIssuerSubscriber::setStandardClaims($event);
 }

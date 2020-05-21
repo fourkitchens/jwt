@@ -19,3 +19,11 @@ function jwt_auth_consumer_help($path, $arg) {
   }
   return NULL;
 }
+
+function jwt_auth_consumer_jwt_auth_validate_alter(JwtAuthValidateEvent &$validate) {
+  JwtAuthConsumerSubscriber::validate($validate);
+}
+
+function jwt_auth_consumer_jwt_auth_valid_alter(JwtAuthValidEvent &$valid) {
+  JwtAuthConsumerSubscriber::loadUser($valid);
+}

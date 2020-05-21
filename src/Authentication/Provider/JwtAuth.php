@@ -1,9 +1,26 @@
 <?php
 
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+
 /**
  * JWT Authentication Provider.
  */
 class JwtAuth {
+
+  /**
+   * The static instance
+   *
+   * @var \JwtAuth
+   */
+  private static $_instance = null;
+
+  public static function get() {
+    if(self::$_instance === null) {
+      self::$_instance = new static(jwt_get_transcoder());
+    }
+    return self::$_instance;
+  }
 
   /**
    * The JWT Transcoder service.
@@ -37,6 +54,10 @@ class JwtAuth {
    */
   public function authenticate(Request $request) {
     $raw_jwt = $this->getJwtFromRequest($request);
+    if(!$raw_jwt) {
+      //throw new AccessDeniedHttpException(t('No JWT token provided!'));
+      return false; // try another authentication method
+    }
 
     // Decode JWT and validate signature.
     try {
@@ -48,16 +69,16 @@ class JwtAuth {
 
     $validate = new JwtAuthValidateEvent($jwt);
     // Signature is validated, but allow modules to do additional validation.
-    $this->eventDispatcher->dispatch(JwtAuthEvents::VALIDATE, $validate);
+    drupal_alter('jwt_auth_validate', $validate);
     if (!$validate->isValid()) {
       throw new AccessDeniedHttpException($validate->invalidReason());
     }
 
     $valid = new JwtAuthValidEvent($jwt);
-    $this->eventDispatcher->dispatch(JwtAuthEvents::VALID, $valid);
+    drupal_alter('jwt_auth_valid', $valid);
     $user = $valid->getUser();
 
-    if (!$user) {
+    if (!$user || !$user->uid) {
       throw new AccessDeniedHttpException('Unable to load user from provided JWT.');
     }
 
@@ -71,8 +92,12 @@ class JwtAuth {
    *   The encoded JWT token. False if there is a problem encoding.
    */
   public function generateToken() {
+    global $user;
+    if(!$user || !$user->uid) {
+      services_error(t('No token can be issued for anonymous user'), 401);
+    }
     $event = new JwtAuthGenerateEvent(new JsonWebToken());
-    $this->eventDispatcher->dispatch(JwtAuthEvents::GENERATE, $event);
+    drupal_alter('jwt_auth_generate', $event);
     $jwt = $event->getToken();
     return $this->transcoder->encode($jwt);
   }

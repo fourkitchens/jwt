@@ -34,7 +34,6 @@ class JwtAuthValidateEvent extends JwtAuthBaseEvent {
   public function invalidate($reason) {
     $this->valid = FALSE;
     $this->invalidReason = $reason;
-    $this->stopPropagation();
   }
 
   /**

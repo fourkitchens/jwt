@@ -5,3 +5,5 @@ core = 7.x
 package = Services
 dependencies[] = jwt
 dependencies[] = services
+files[] = src/Controller/JwtAuthIssuerController.php
+files[] = src/EventSubscriber/JwtAuthIssuerSubscriber.php

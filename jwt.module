@@ -6,6 +6,8 @@
  */
 
 use Firebase\JWT\JWT;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 /**
  * Implements hook_ctools_plugin_directory().
@@ -18,6 +20,18 @@ function jwt_ctools_plugin_directory($owner, $plugin_type) {
 }
 
 /**
+ * @return JwtTranscoderInterface
+ */
+function jwt_get_transcoder() {
+  static $transcoder = null;
+  if(!$transcoder) {
+    libraries_load('php-jwt');
+    $transcoder = new JwtTranscoder(new JWT());
+  }
+  return $transcoder;
+}
+
+/**
  * @param $payload
  *
  * @return bool|string
@@ -25,15 +39,14 @@ function jwt_ctools_plugin_directory($owner, $plugin_type) {
 function jwt_get_jwt($payload) {
   libraries_load('php-jwt');
   $jwt = new JsonWebToken($payload);
-  $transcoder = new JwtTranscoder(new JWT());
-  return $transcoder->encode($jwt);
+  return jwt_get_transcoder()->encode($jwt);
 }
 
 /**
  * Implements hook_libraries_info().
  */
 function jwt_libraries_info() {
-  $libraries['php-jwt'] = array(
+  $libraries['php-jwt'] = [
     'name' => 'PHP JWT',
     'vendor url' => 'https://github.com/firebase/php-jwt',
     'download url' => 'https://github.com/firebase/php-jwt/releases/latest',
@@ -42,16 +55,31 @@ function jwt_libraries_info() {
       'pattern' => "/^#### (.*) \//",
       'lines' => 121,
     ),
-    'files' => array(
-      'php' => array(
+    'files' => [
+      'php' => [
         'src/BeforeValidException.php',
         'src/ExpiredException.php',
         'src/JWT.php',
         'src/SignatureInvalidException.php',
-      ),
-    ),
+      ],
+    ],
     'xautoload' => 'jwt_libraries_info_xautoload',
-  );
+  ];
+  $libraries['symfony'] = [
+    'name' => 'Symfony',
+    'vendor url' => 'https://github.com/symfony/symfony',
+    'download url' => 'https://github.com/symfony/symfony/releases/latest',
+    'version arguments' => [
+      'file' => 'src/Symfony/Component/HttpKernel/Kernel.php',
+      'pattern' => "/\s*VERSION\s*=\s*'([^']+)'/",
+      'lines' => 76,
+    ],
+    'files' => [
+      'php' => [
+        'autoload.php'
+      ],
+    ]
+  ];
 
   return $libraries;
 }
@@ -82,3 +110,52 @@ function jwt_menu() {
 
   return $items;
 }
+
+/**
+ * Authenticates a call using a JWT token to verify the request.
+ *
+ * @param array $settings
+ *   The settings for the authentication module.
+ * @param array $method
+ *   The method that's being called.
+ * @param array $args
+ *   The arguments that are being used to call the method.
+ *
+ * @return void|string
+ *   Returns nothing, or a error message if authentication fails.
+ */
+
+function _jwt_authenticate($settings, $method, $args) {
+  // Disable page caching for any request that requires an authentication
+  // check.
+  drupal_page_is_cacheable(FALSE);
+
+  libraries_load('symfony');
+  $request = new Request($_GET, $_POST, [], $_COOKIE, $_FILES, $_SERVER);
+  try {
+    $juser = JwtAuth::get()->authenticate($request);
+    if(!$juser || !$juser->uid) {
+      return;
+    }
+    else{
+      global $user;
+      $user = $juser;
+    }
+  }
+  catch(AccessDeniedHttpException $e) {
+    return $e->getMessage();
+  }
+}
+
+/**
+ * Implements hook_services_authentication().
+ */
+function jwt_services_authentication_info() {
+  return array(
+    'file'             => 'jwt.module',
+    'title'            => t('JWT authentication'),
+    'description'      => t('Authenticate using a JWT token'),
+    'authenticate_call' => '_jwt_authenticate',
+  );
+}
+

@@ -6,7 +6,6 @@ configure = jwt_config_form
 dependencies[] = key
 dependencies[] = libraries
 files[] = src/Authentication/Event/JwtAuthBaseEvent.php
-files[] = src/Authentication/Event/JwtAuthEvents.php
 files[] = src/Authentication/Event/JwtAuthGenerateEvent.php
 files[] = src/Authentication/Event/JwtAuthValidateEvent.php
 files[] = src/Authentication/Event/JwtAuthValidEvent.php
