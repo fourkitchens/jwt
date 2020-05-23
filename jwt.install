@@ -11,16 +11,18 @@
 function jwt_requirements($phase) {
   $requirements = [];
   if ($phase == 'install') {
-    if (!class_exists('\Firebase\JWT\JWT') && !($library = libraries_detect('php-jwt') && !empty($library['installed']))) {
+    libraries_load('php-jwt');
+    if (!class_exists('\Firebase\JWT\JWT')) {
       $requirements['jwt_library'] = [
         'description' => t('JWT Authentication requires the firebase/php-jwt library.'),
-        'severity' => REQUIREMENT_ERROR,
+        'severity' => REQUIREMENT_WARNING,
       ];
     }
-    if (!class_exists('\Symfony\Component\HttpFoundation\Request') && !($library = libraries_detect('symfony') && !empty($library['installed']))) {
+    libraries_load('symfony');
+    if (!class_exists('\Symfony\Component\HttpFoundation\Request')) {
       $requirements['symfony'] = [
         'description' => t('JWT Authentication requires the symfony library.'),
-        'severity' => REQUIREMENT_ERROR,
+        'severity' => REQUIREMENT_WARNING,
       ];
     }
   }
